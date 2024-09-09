@@ -3,6 +3,7 @@ pub trait Hashable {
 }
 
 impl Hashable for String {
+    // using the djb2 algo (https://theartincode.stanis.me/008-djb2/)
     fn hash(&self) -> usize {
         let mut result: usize = 5381;
 
@@ -18,7 +19,7 @@ impl Hashable for String {
 struct HashItem<Key, Value> {
     key: Key,
     value: Value,
-    taken: bool,
+    is_taken: bool,
 }
 
 pub struct HashTable<Key, Value> {
@@ -29,7 +30,7 @@ pub struct HashTable<Key, Value> {
 
 impl<Key: Default + Clone + PartialEq + Hashable, Value: Default + Clone> HashTable<Key, Value> {
     pub fn new() -> Self {
-        const INITIAL_SIZE: usize = 67;
+        const INITIAL_SIZE: usize = 61;
 
         Self {
             kvs: vec![HashItem::<_, _>::default(); INITIAL_SIZE],
@@ -48,11 +49,11 @@ impl<Key: Default + Clone + PartialEq + Hashable, Value: Default + Clone> HashTa
         let mut index = self.get_hash_index(&key);
 
         for _ in 0..self.size {
-            if !self.kvs[index].taken {
+            if !self.kvs[index].is_taken {
                 self.kvs[index] = HashItem {
                     key: key.to_owned(),
                     value: value.to_owned(),
-                    taken: true,
+                    is_taken: true,
                 };
                 self.no_of_taken += 1;
 
@@ -63,7 +64,7 @@ impl<Key: Default + Clone + PartialEq + Hashable, Value: Default + Clone> HashTa
                 self.kvs[index].value = value.to_owned();
             }
 
-            self.linear_probing(&mut index);
+            index = (index + 1) % self.size;
         }
     }
 
@@ -89,11 +90,11 @@ impl<Key: Default + Clone + PartialEq + Hashable, Value: Default + Clone> HashTa
         let mut new_self = Self {
             kvs: vec![HashItem::<_, _>::default(); new_size],
             size: new_size,
-            no_of_taken: 0,
+            no_of_taken: self.no_of_taken,
         };
 
         for item in self.kvs.iter() {
-            if item.taken {
+            if item.is_taken {
                 new_self.insert(item.key.to_owned(), item.value.to_owned());
             }
         }
@@ -106,7 +107,7 @@ impl<Key: Default + Clone + PartialEq + Hashable, Value: Default + Clone> HashTa
 
         for _ in 0..self.size {
             // if no item found
-            if !self.kvs[index].taken {
+            if !self.kvs[index].is_taken {
                 break;
             }
 
@@ -115,10 +116,10 @@ impl<Key: Default + Clone + PartialEq + Hashable, Value: Default + Clone> HashTa
                 break;
             }
 
-            self.linear_probing(&mut index);
+            index = (index + 1) % self.size;
         }
 
-        if self.kvs[index].taken && self.kvs[index].key == *key {
+        if self.kvs[index].is_taken && self.kvs[index].key == *key {
             Some(index)
         } else {
             None
@@ -127,10 +128,6 @@ impl<Key: Default + Clone + PartialEq + Hashable, Value: Default + Clone> HashTa
 
     fn get_hash_index(&self, key: &Key) -> usize {
         key.hash() % self.size
-    }
-
-    fn linear_probing(&self, index: &mut usize) {
-        *index = (*index + 1) % self.size;
     }
 }
 
