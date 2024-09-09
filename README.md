@@ -106,22 +106,24 @@ starting point. As the rule says, *”If something works, don’t change it!”.
     - After shifting, we then add original hash value back to the shifted value.
     Which is equivalent of `hash * 33`
 
-        > [!NOTE]
-        > In early computing, multiplication was generally more computationally expensive
-        > than bitwise operations. Bitwise shifts and additions were faster and required
-        > less hardware. So directly multiplying by 33 is slower then left shift and addition.
-        > But modern compilers are very good at optimizing code. They might even recognize
-        > that `hash * 33` can be optimized using a left shift and addition, so there's
-        > often no performance difference in modern systems.
-
     - Finally ASCII value of current character is added, and calculated value is then
     interchanged with `hash`.
 
-4. For e.g. If our key is “ab”, in our loop we do fallowing —
+> [!IMPORTANT]
+> In early computing, multiplication was generally more computationally expensive
+> than bitwise operations. Bitwise shifts and additions were faster and required
+> less hardware. So directly multiplying by 33 is slower then left shift and addition.
+
+> [!TIP]
+> But modern compilers are very good at optimizing code. They might even recognize
+> that `hash * 33` can be optimized using a left shift and addition, so there's
+> often no performance difference in modern systems.
+
+For e.g. If our key is “ab”, in our loop we do fallowing —
 
 ASCII value of *a* is 97 and for *b* is 98.
 
-> [!TIP]
+> [!NOTE]
 > ASCII, or **American Standard Code for Information Interchange**, is a character encoding
 > standard used for electronic communication. It assigns numeric values to letters, numerals,
 > punctuation marks, and other characters, allowing computers to represent and manipulate text
@@ -142,7 +144,7 @@ of our hash table when it reaches a certain capacity.
 For e.g. in our hash table if we have load factor of 75%, then we will extend the size of our table if it
 reaches 75% of its capacity.
 
-> [!TIP]
+> [!IMPORTANT]
 > But why does it matter?
 >
 > If our table exceeds the load factor (generally 75%), it increases the likelihood of collisions in our table,
@@ -201,6 +203,6 @@ Here the type `u8` can store values in range `0` to `2^8 - 1` i.e. (0 - 255), so
 the result should be 260. However, since 260 is out of range of `u8`'s capacity, our operation overflow‘s
 and results in panic.
 
-> [!TIP]
+> [!NOTE]
 > Our program will only panic in debug mode to make us alert of this bug. In release mode our program will
 > automatically wrap the value, resulting `a`'s value to be `4`. How? — `(250 + 10) % 256 = 4`
